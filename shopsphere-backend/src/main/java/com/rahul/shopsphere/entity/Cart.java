@@ -3,6 +3,8 @@ package com.rahul.shopsphere.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,9 +35,11 @@ public class Cart {
 
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"password"})
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"cart"})
     private List<CartItem> cartItems;
 
     private LocalDateTime createdAt;
