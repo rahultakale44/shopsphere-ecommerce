@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rahul.shopsphere.entity.Cart;
+import com.rahul.shopsphere.dto.CartResponse;
 import com.rahul.shopsphere.service.CartService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,32 +21,20 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    public Cart getCart(
-            Authentication authentication
-    ) {
-
-        return cartService.getUserCart(
-                authentication.getName()
-        );
+    public CartResponse getCart(Authentication authentication) {
+        return cartService.getUserCart(authentication.getName());
     }
 
     @PostMapping("/add/{productId}")
-    public Cart addToCart(
+    public CartResponse addToCart(
             @PathVariable Long productId,
             Authentication authentication
     ) {
-
-        return cartService.addToCart(
-                authentication.getName(),
-                productId
-        );
+        return cartService.addToCart(authentication.getName(), productId);
     }
 
     @DeleteMapping("/remove/{cartItemId}")
-    public String removeFromCart(
-            @PathVariable Long cartItemId
-    ) {
-
+    public String removeFromCart(@PathVariable Long cartItemId) {
         return cartService.removeCartItem(cartItemId);
     }
 }

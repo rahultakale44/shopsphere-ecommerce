@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.rahul.shopsphere.dto.OrderItemResponse;
+import com.rahul.shopsphere.dto.OrderResponse;
 import com.rahul.shopsphere.entity.Cart;
 import com.rahul.shopsphere.entity.CartItem;
 import com.rahul.shopsphere.entity.Order;
@@ -30,19 +32,18 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartService cartService;
 
-    public Order placeOrder(String email) {
+    public OrderResponse placeOrder(String email) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Cart cart = cartService.getUserCart(email);
+        Cart cart = cartService.getUserCartEntity(email);
 
         if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
-
         List<OrderItem> orderItems = new ArrayList<>();
 
         Order order = Order.builder()
@@ -77,14 +78,39 @@ public class OrderService {
         cart.getCartItems().clear();
         cartRepository.save(cart);
 
-        return savedOrder;
+        return mapToOrderResponse(savedOrder);
     }
 
-    public List<Order> getUserOrders(String email) {
+    public List<OrderResponse> getUserOrders(String email) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return orderRepository.findByUserId(user.getId());
+        return orderRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
+
+    private OrderResponse mapToOrderResponse(Order order) {
+
+        List<OrderItemResponse> items = order.getOrderItems()
+                .stream()
+                .map(item -> OrderItemResponse.builder()
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
+                        .imageUrl(item.getProduct().getImageUrl())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .build())
+                .toList();
+
+        return OrderResponse.builder()
+                .orderId(order.getId())
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .items(items)
+                .build();
     }
 }
