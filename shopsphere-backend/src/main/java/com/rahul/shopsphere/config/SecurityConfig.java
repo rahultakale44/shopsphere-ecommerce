@@ -41,13 +41,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/categories/**").permitAll()
+                        .requestMatchers("/api/test").authenticated()
+                        .requestMatchers("/api/admin/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
