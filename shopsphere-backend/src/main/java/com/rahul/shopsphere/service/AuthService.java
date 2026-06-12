@@ -24,7 +24,7 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            return new AuthResponse("Email already registered");
+            return new AuthResponse("Email already registered", null);
         }
 
         User user = User.builder()
@@ -37,7 +37,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return new AuthResponse("User registered successfully");
+        return new AuthResponse("User registered successfully", null);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -46,7 +46,7 @@ public class AuthService {
                 .orElse(null);
 
         if (user == null) {
-            return new AuthResponse("Invalid email or password");
+            return new AuthResponse("Invalid email or password", null);
         }
 
         boolean passwordMatches = passwordEncoder.matches(
@@ -55,9 +55,9 @@ public class AuthService {
         );
 
         if (!passwordMatches) {
-            return new AuthResponse("Invalid email or password");
+            return new AuthResponse("Invalid email or password", null);
         }
 
-        return new AuthResponse("Login successful");
+        return new AuthResponse("Login successful", "JWT_TOKEN_WILL_COME_HERE");
     }
 }
