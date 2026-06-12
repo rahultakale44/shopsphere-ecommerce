@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.rahul.shopsphere.dto.AuthResponse;
+import com.rahul.shopsphere.dto.LoginRequest;
 import com.rahul.shopsphere.dto.RegisterRequest;
 import com.rahul.shopsphere.entity.Role;
 import com.rahul.shopsphere.entity.User;
@@ -37,5 +38,26 @@ public class AuthService {
         userRepository.save(user);
 
         return new AuthResponse("User registered successfully");
+    }
+
+    public AuthResponse login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            return new AuthResponse("Invalid email or password");
+        }
+
+        boolean passwordMatches = passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword()
+        );
+
+        if (!passwordMatches) {
+            return new AuthResponse("Invalid email or password");
+        }
+
+        return new AuthResponse("Login successful");
     }
 }
