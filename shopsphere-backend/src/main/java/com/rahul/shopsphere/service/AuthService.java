@@ -11,6 +11,7 @@ import com.rahul.shopsphere.dto.RegisterRequest;
 import com.rahul.shopsphere.entity.Role;
 import com.rahul.shopsphere.entity.User;
 import com.rahul.shopsphere.repository.UserRepository;
+import com.rahul.shopsphere.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -58,6 +60,8 @@ public class AuthService {
             return new AuthResponse("Invalid email or password", null);
         }
 
-        return new AuthResponse("Login successful", "JWT_TOKEN_WILL_COME_HERE");
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new AuthResponse("Login successful", token);
     }
 }
