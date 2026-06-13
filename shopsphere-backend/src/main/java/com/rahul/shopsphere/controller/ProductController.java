@@ -2,13 +2,10 @@ package com.rahul.shopsphere.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.*;
 
 import com.rahul.shopsphere.entity.Product;
 import com.rahul.shopsphere.service.ProductService;
@@ -33,6 +30,29 @@ public class ProductController {
     @GetMapping("/products")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
+    }
+
+    @GetMapping("/products/page")
+    public Page<Product> getProductsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return productService.getProductsPage(
+                PageRequest.of(page, size, sort)
+        );
+    }
+
+    @GetMapping("/products/search")
+    public List<Product> searchProducts(
+            @RequestParam String keyword
+    ) {
+        return productService.searchProducts(keyword);
     }
 
     @GetMapping("/products/{id}")

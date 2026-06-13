@@ -3,6 +3,8 @@ package com.rahul.shopsphere.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.rahul.shopsphere.entity.Category;
@@ -34,6 +36,18 @@ public class ProductService {
 
     public List<Product> getAllProducts() {
         return productRepository.findByActiveTrue();
+    }
+
+    public Page<Product> getProductsPage(Pageable pageable) {
+        return productRepository.findByActiveTrue(pageable);
+    }
+
+    public List<Product> searchProducts(String keyword) {
+        return productRepository
+                .findByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(
+                        keyword,
+                        keyword
+                );
     }
 
     public Product getProductById(Long id) {
