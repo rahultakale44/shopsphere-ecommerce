@@ -92,6 +92,29 @@ public class OrderService {
                 .toList();
     }
 
+    public List<OrderResponse> getAllOrders() {
+
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
+
+    public OrderResponse updateOrderStatus(
+            Long orderId,
+            OrderStatus status
+    ) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(status);
+
+        Order updatedOrder = orderRepository.save(order);
+
+        return mapToOrderResponse(updatedOrder);
+    }
+
     private OrderResponse mapToOrderResponse(Order order) {
 
         List<OrderItemResponse> items = order.getOrderItems()
