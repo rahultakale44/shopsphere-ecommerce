@@ -30,7 +30,6 @@ public class CartService {
     private final UserRepository userRepository;
 
     public Cart getUserCartEntity(String email) {
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -56,7 +55,6 @@ public class CartService {
     }
 
     public CartResponse addToCart(String email, Long productId, int quantity) {
-
         if (quantity < 1) {
             throw new RuntimeException("Quantity must be at least 1");
         }
@@ -80,17 +78,15 @@ public class CartService {
                             ? product.getDiscountPrice()
                             : product.getPrice())
                     .build();
-
-            cart.getCartItems().add(cartItem);
         }
 
         cartItemRepository.save(cartItem);
 
-        return mapToCartResponse(cart);
+        Cart updatedCart = getUserCartEntity(email);
+        return mapToCartResponse(updatedCart);
     }
 
     public CartResponse updateCartItemQuantity(String email, Long cartItemId, int quantity) {
-
         Cart cart = getUserCartEntity(email);
 
         CartItem cartItem = cartItemRepository.findById(cartItemId)
@@ -107,38 +103,42 @@ public class CartService {
             cartItemRepository.save(cartItem);
         }
 
-        return mapToCartResponse(cart);
+        Cart updatedCart = getUserCartEntity(email);
+        return mapToCartResponse(updatedCart);
     }
 
     public String removeCartItem(Long cartItemId) {
-        cartItemRepository.deleteById(cartItemId);
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        cartItemRepository.delete(cartItem);
         return "Item removed from cart";
     }
 
     private CartResponse mapToCartResponse(Cart cart) {
-
         List<CartItemResponse> itemResponses = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for (CartItem item : cart.getCartItems()) {
+        if (cart.getCartItems() != null) {
+            for (CartItem item : cart.getCartItems()) {
+                BigDecimal itemTotal = item.getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity()));
 
-            BigDecimal itemTotal = item.getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+                totalAmount = totalAmount.add(itemTotal);
 
-            totalAmount = totalAmount.add(itemTotal);
-
-            itemResponses.add(
-                    CartItemResponse.builder()
-                            .cartItemId(item.getId())
-                            .productId(item.getProduct().getId())
-                            .productName(item.getProduct().getName())
-                            .brand(item.getProduct().getBrand())
-                            .imageUrl(item.getProduct().getImageUrl())
-                            .quantity(item.getQuantity())
-                            .price(item.getPrice())
-                            .totalPrice(itemTotal)
-                            .build()
-            );
+                itemResponses.add(
+                        CartItemResponse.builder()
+                                .cartItemId(item.getId())
+                                .productId(item.getProduct().getId())
+                                .productName(item.getProduct().getName())
+                                .brand(item.getProduct().getBrand())
+                                .imageUrl(item.getProduct().getImageUrl())
+                                .quantity(item.getQuantity())
+                                .price(item.getPrice())
+                                .totalPrice(itemTotal)
+                                .build()
+                );
+            }
         }
 
         return CartResponse.builder()
