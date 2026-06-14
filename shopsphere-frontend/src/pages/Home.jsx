@@ -1,28 +1,21 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import api from "../api/axiosConfig.js";
 import { useApp } from "../context/AppContext.jsx";
-import { CATEGORIES, FALLBACK_PRODUCTS } from "../utils/products.js";
-import heroImage from "../assets/hero.png";
+import {
+  CATEGORIES,
+  DEALS_PRODUCTS,
+  FEATURED_SPOTLIGHT,
+  HERO_IMAGE,
+  TOP_PICKS_PRODUCTS,
+} from "../utils/products.js";
 
 function Home() {
   const { refreshCartCount } = useApp();
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const res = await api.get("/products");
-        setProducts(res.data.content || res.data);
-      } catch {
-        setProducts(FALLBACK_PRODUCTS);
-      }
-    };
-    loadProducts();
-  }, []);
+  const deals = DEALS_PRODUCTS;
+  const topPicks = TOP_PICKS_PRODUCTS;
 
   const addToCart = async (productId) => {
     try {
@@ -42,11 +35,6 @@ function Home() {
       alert("Please login first");
     }
   };
-
-  const deals = products.slice(0, 4);
-  const topPicks = products.slice(4, 8).length
-    ? products.slice(4, 8)
-    : [...products].reverse().slice(0, 4);
 
   return (
     <div className="app">
@@ -75,7 +63,7 @@ function Home() {
         </div>
 
         <div className="hero-image">
-          <img src={heroImage} alt="Shopping bags" />
+          <img src={HERO_IMAGE} alt="Shopping bags" />
           <div className="deal-card">
             <small>Today&apos;s flash deal</small>
             <b>Up to 60% off</b>
@@ -103,6 +91,20 @@ function Home() {
         </div>
       </section>
 
+      <section className="spotlight-section">
+        <div className="spotlight-grid">
+          {FEATURED_SPOTLIGHT.map((item) => (
+            <Link to="/products" className="spotlight-card" key={item.id}>
+              <img src={item.imageUrl} alt={item.title} />
+              <div className="spotlight-overlay">
+                <small>{item.subtitle}</small>
+                <b>{item.title}</b>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="category-section">
         <div className="section-head">
           <h2>Shop by category</h2>
@@ -111,9 +113,11 @@ function Home() {
 
         <div className="categories">
           {CATEGORIES.map((cat) => (
-            <Link to="/products" className="category" key={cat}>
-              <div className="category-circle">{cat[0]}</div>
-              <b>{cat}</b>
+            <Link to="/products" className="category" key={cat.name}>
+              <div className="category-circle">
+                <img src={cat.imageUrl} alt={cat.name} loading="lazy" />
+              </div>
+              <b>{cat.name}</b>
             </Link>
           ))}
         </div>
@@ -128,7 +132,7 @@ function Home() {
           <Link to="/products">See all deals</Link>
         </div>
 
-        <div className="product-grid">
+        <div className="product-grid home-product-grid">
           {deals.map((product) => (
             <ProductCard
               product={product}
@@ -146,7 +150,7 @@ function Home() {
           <Link to="/products">Browse all</Link>
         </div>
 
-        <div className="product-grid">
+        <div className="product-grid home-product-grid">
           {topPicks.map((product) => (
             <ProductCard
               product={product}

@@ -81,6 +81,21 @@ public class OrderService {
         return mapToOrderResponse(savedOrder);
     }
 
+    public OrderResponse getOrderById(String email, Long orderId) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Order not found");
+        }
+
+        return mapToOrderResponse(order);
+    }
+
     public List<OrderResponse> getUserOrders(String email) {
 
         User user = userRepository.findByEmail(email)
@@ -133,6 +148,8 @@ public class OrderService {
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
+                .customerName(order.getUser().getName())
+                .customerEmail(order.getUser().getEmail())
                 .items(items)
                 .build();
     }

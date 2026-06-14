@@ -1,9 +1,49 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CheckCircle2, Circle, Package, Truck } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import api from "../api/axiosConfig.js";
-import { formatPrice } from "../utils/products.js";
+import { formatPrice, getProductImage } from "../utils/products.js";
+
+const TRACKING_STEPS = [
+  { key: "PENDING", label: "Order placed" },
+  { key: "CONFIRMED", label: "Confirmed" },
+  { key: "SHIPPED", label: "Shipped" },
+  { key: "DELIVERED", label: "Delivered" },
+];
+
+function getStepIndex(status) {
+  if (status === "CANCELLED") return -1;
+  const idx = TRACKING_STEPS.findIndex((s) => s.key === status);
+  return idx >= 0 ? idx : 0;
+}
+
+function OrderTracker({ status }) {
+  if (status === "CANCELLED") {
+    return <p className="order-cancelled">This order was cancelled.</p>;
+  }
+
+  const current = getStepIndex(status);
+
+  return (
+    <div className="order-tracker">
+      {TRACKING_STEPS.map((step, index) => {
+        const done = index <= current;
+        const active = index === current;
+        return (
+          <div className={`tracker-step ${done ? "done" : ""} ${active ? "active" : ""}`} key={step.key}>
+            <div className="tracker-icon">
+              {done ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+            </div>
+            <span>{step.label}</span>
+            {index < TRACKING_STEPS.length - 1 && <div className="tracker-line" />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function Orders() {
   const navigate = useNavigate();
@@ -41,6 +81,7 @@ function Orders() {
 
       <div className="orders-page">
         <h1>My Orders</h1>
+        <p className="orders-subtitle">Track and manage your purchases</p>
 
         {loading ? (
           <p className="page-message">Loading orders...</p>
@@ -64,12 +105,22 @@ function Orders() {
                 </span>
               </div>
 
+              <OrderTracker status={order.status} />
+
+              <div className="order-status-icons">
+                <span>
+                  <Package size={16} /> {order.items?.length ?? 0} item(s)
+                </span>
+                {order.status === "SHIPPED" || order.status === "DELIVERED" ? (
+                  <span>
+                    <Truck size={16} /> Out for delivery
+                  </span>
+                ) : null}
+              </div>
+
               {order.items?.map((item) => (
                 <div className="order-item" key={`${order.orderId}-${item.productId}`}>
-                  <img
-                    src={item.imageUrl || "https://via.placeholder.com/120"}
-                    alt={item.productName}
-                  />
+                  <img src={getProductImage(item)} alt={item.productName} />
                   <div>
                     <h4>{item.productName}</h4>
                     <p>Quantity: {item.quantity}</p>

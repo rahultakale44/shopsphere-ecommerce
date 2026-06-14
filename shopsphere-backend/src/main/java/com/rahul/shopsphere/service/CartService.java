@@ -52,6 +52,14 @@ public class CartService {
     }
 
     public CartResponse addToCart(String email, Long productId) {
+        return addToCart(email, productId, 1);
+    }
+
+    public CartResponse addToCart(String email, Long productId, int quantity) {
+
+        if (quantity < 1) {
+            throw new RuntimeException("Quantity must be at least 1");
+        }
 
         Cart cart = getUserCartEntity(email);
 
@@ -62,19 +70,42 @@ public class CartService {
                 .orElse(null);
 
         if (cartItem != null) {
-            cartItem.setQuantity(cartItem.getQuantity() + 1);
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
         } else {
             cartItem = CartItem.builder()
                     .cart(cart)
                     .product(product)
-                    .quantity(1)
-                    .price(product.getDiscountPrice())
+                    .quantity(quantity)
+                    .price(product.getDiscountPrice() != null
+                            ? product.getDiscountPrice()
+                            : product.getPrice())
                     .build();
 
             cart.getCartItems().add(cartItem);
         }
 
         cartItemRepository.save(cartItem);
+
+        return mapToCartResponse(cart);
+    }
+
+    public CartResponse updateCartItemQuantity(String email, Long cartItemId, int quantity) {
+
+        Cart cart = getUserCartEntity(email);
+
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (!cartItem.getCart().getId().equals(cart.getId())) {
+            throw new RuntimeException("Cart item not found");
+        }
+
+        if (quantity <= 0) {
+            cartItemRepository.delete(cartItem);
+        } else {
+            cartItem.setQuantity(quantity);
+            cartItemRepository.save(cartItem);
+        }
 
         return mapToCartResponse(cart);
     }

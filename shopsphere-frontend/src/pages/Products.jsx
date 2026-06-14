@@ -5,7 +5,7 @@ import Footer from "../components/Footer.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import api from "../api/axiosConfig.js";
 import { useApp } from "../context/AppContext.jsx";
-import { FALLBACK_PRODUCTS } from "../utils/products.js";
+import { resolveProducts } from "../utils/products.js";
 
 function Products() {
   const [searchParams] = useSearchParams();
@@ -19,9 +19,9 @@ function Products() {
       setLoading(true);
       try {
         const res = await api.get("/products");
-        setProducts(res.data.content || res.data);
+        setProducts(resolveProducts(res.data.content || res.data));
       } catch {
-        setProducts(FALLBACK_PRODUCTS);
+        setProducts(resolveProducts([]));
       } finally {
         setLoading(false);
       }

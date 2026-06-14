@@ -39,6 +39,14 @@ public class OrderController {
         return orderService.getAllOrders();
     }
 
+    @GetMapping("/{orderId}")
+    public OrderResponse getOrderById(
+            @PathVariable Long orderId,
+            Authentication authentication
+    ) {
+        return orderService.getOrderById(authentication.getName(), orderId);
+    }
+
     @PutMapping("/admin/{orderId}/status")
     public OrderResponse updateOrderStatus(
             @PathVariable Long orderId,
