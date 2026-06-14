@@ -17,6 +17,7 @@ function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { refreshCartCount } = useApp();
+
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ function ProductDetail() {
   useEffect(() => {
     const loadProduct = async () => {
       setLoading(true);
+
       try {
         const res = await api.get(`/products/${id}`);
         setProduct(enrichProduct(res.data));
@@ -35,6 +37,7 @@ function ProductDetail() {
         setLoading(false);
       }
     };
+
     loadProduct();
   }, [id]);
 
@@ -43,30 +46,53 @@ function ProductDetail() {
   };
 
   const addToCart = async (redirectToCheckout = false) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login first to order.");
+      navigate("/login");
+      return;
+    }
+
+    if (!product?.id) {
+      alert("Product not found.");
+      return;
+    }
+
     setActionLoading(true);
+
     try {
       await api.post(`/cart/add/${product.id}?quantity=${quantity}`);
       await refreshCartCount();
+
       if (redirectToCheckout) {
-        navigate("/checkout");
+        navigate("/cart");
       } else {
         alert(`Added ${quantity} item(s) to cart`);
       }
-    } catch {
-      alert("Please login first to order");
-      navigate("/login");
+    } catch (error) {
+      console.log(error);
+      alert("Unable to add product to cart. Please try again.");
     } finally {
       setActionLoading(false);
     }
   };
 
   const addToWishlist = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login first.");
+      navigate("/login");
+      return;
+    }
+
     try {
       await api.post(`/wishlist/add/${product.id}`);
       alert("Added to wishlist");
-    } catch {
-      alert("Please login first");
-      navigate("/login");
+    } catch (error) {
+      console.log(error);
+      alert("Unable to add product to wishlist.");
     }
   };
 
@@ -131,8 +157,7 @@ function ProductDetail() {
                 {"★".repeat(Math.round(product.rating))}
                 {"☆".repeat(5 - Math.round(product.rating))}{" "}
                 <span>
-                  ({product.reviewCount?.toLocaleString("en-IN") ?? product.rating}{" "}
-                  reviews)
+                  ({product.reviewCount?.toLocaleString("en-IN") ?? product.rating} reviews)
                 </span>
               </div>
             )}
@@ -152,15 +177,27 @@ function ProductDetail() {
 
             <div className="quantity-section">
               <label>Quantity</label>
+
               <div className="quantity-controls">
-                <button type="button" onClick={() => adjustQuantity(-1)} aria-label="Decrease">
+                <button
+                  type="button"
+                  onClick={() => adjustQuantity(-1)}
+                  aria-label="Decrease"
+                >
                   <Minus size={18} />
                 </button>
+
                 <span className="quantity-value">{quantity}</span>
-                <button type="button" onClick={() => adjustQuantity(1)} aria-label="Increase">
+
+                <button
+                  type="button"
+                  onClick={() => adjustQuantity(1)}
+                  aria-label="Increase"
+                >
                   <Plus size={18} />
                 </button>
               </div>
+
               <div className="quantity-presets">
                 {[1, 2, 3, 4, 5].map((qty) => (
                   <button
@@ -189,6 +226,7 @@ function ProductDetail() {
               >
                 <ShoppingCart size={18} /> Add to Cart
               </button>
+
               <button
                 type="button"
                 className="btn-buy-now"
@@ -197,6 +235,7 @@ function ProductDetail() {
               >
                 <Zap size={18} /> Buy Now
               </button>
+
               <button
                 type="button"
                 className="wishlist-btn"
