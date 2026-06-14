@@ -50,16 +50,18 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/categories/**").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/cart/**").authenticated()
-                        .requestMatchers("/api/orders/**").authenticated()
-                        .requestMatchers("/api/payments/**").authenticated()
-                        .requestMatchers("/api/wishlist/**").authenticated()
-                        .requestMatchers("/api/reviews/**").authenticated()
-                        .requestMatchers("/api/admin/**").authenticated()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth", "/api/auth/**").permitAll()
+                        .requestMatchers("/api/categories", "/api/categories/**").permitAll()
+                        .requestMatchers("/api/products", "/api/products/**").permitAll()
+
+                        .requestMatchers("/api/cart", "/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders", "/api/orders/**").authenticated()
+                        .requestMatchers("/api/payments", "/api/payments/**").authenticated()
+                        .requestMatchers("/api/wishlist", "/api/wishlist/**").authenticated()
+                        .requestMatchers("/api/reviews", "/api/reviews/**").authenticated()
+                        .requestMatchers("/api/admin", "/api/admin/**").authenticated()
+
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(
                         jwtAuthenticationFilter,
