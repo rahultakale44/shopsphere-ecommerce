@@ -1,4 +1,4 @@
-﻿# ShopSphere – Full Stack E-Commerce Platform
+﻿# ShopSphere – Java Full Stack E-Commerce Platform
 
 ShopSphere is a full-stack e-commerce application inspired by modern online shopping platforms like Amazon and Flipkart. The platform allows users to browse products, manage their cart, place orders, and track purchases through a responsive and user-friendly interface.
 
