@@ -5,13 +5,39 @@ import { useApp } from "../context/AppContext.jsx";
 
 function Navbar() {
   const navigate = useNavigate();
-  const { cartCount, isLoggedIn } = useApp();
+  const { cartCount, isLoggedIn, setIsLoggedIn } = useApp();
+
   const [search, setSearch] = useState("");
+
+  const token = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
+  const displayName =
+    user?.name?.split(" ")[0] || user?.email?.split("@")[0] || "User";
+
+  const loggedIn = Boolean(token) || isLoggedIn;
 
   const handleSearch = (e) => {
     e.preventDefault();
+
     const query = search.trim();
     navigate(query ? `/products?q=${encodeURIComponent(query)}` : "/products");
+  };
+
+  const handleAccountClick = () => {
+    if (loggedIn) {
+      navigate("/orders");
+    } else {
+      navigate("/login");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    navigate("/login");
   };
 
   return (
@@ -32,20 +58,22 @@ function Navbar() {
             <option>Electronics</option>
             <option>Fashion</option>
           </select>
+
           <input
             placeholder="Search ShopSphere"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
           <button type="submit" aria-label="Search">
             <Search size={22} />
           </button>
         </form>
 
-        <Link to={isLoggedIn ? "/" : "/login"} className="nav-item">
-          <small>{isLoggedIn ? "Hello" : "Hello, sign in"}</small>
+        <button type="button" className="nav-item nav-account" onClick={handleAccountClick}>
+          <small>{loggedIn ? `Hello, ${displayName}` : "Hello, sign in"}</small>
           <b>Account & Lists</b>
-        </Link>
+        </button>
 
         <Link to="/orders" className="nav-item">
           <small>Returns</small>
@@ -61,6 +89,12 @@ function Navbar() {
           {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           <b>Cart</b>
         </Link>
+
+        {loggedIn && (
+          <button type="button" className="logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        )}
       </nav>
 
       <div className="sub-navbar">

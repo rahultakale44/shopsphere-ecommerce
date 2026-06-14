@@ -6,6 +6,7 @@ import { useApp } from "../context/AppContext.jsx";
 function Login() {
   const navigate = useNavigate();
   const { refreshCartCount, setIsLoggedIn } = useApp();
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
@@ -15,11 +16,23 @@ function Login() {
 
     try {
       const res = await api.post("/auth/login", form);
+
       localStorage.setItem("token", res.data.token);
+
+      const userData = {
+        name: res.data.name || form.email.split("@")[0],
+        email: res.data.email || form.email,
+        role: res.data.role || "CUSTOMER",
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+
       setIsLoggedIn(true);
       await refreshCartCount();
+
       navigate("/");
-    } catch {
+    } catch (error) {
+      console.log(error);
       alert("Invalid email or password");
     } finally {
       setLoading(false);
@@ -32,6 +45,7 @@ function Login() {
         <h1>
           Shop<span>Sphere</span>
         </h1>
+
         <h2>Sign in</h2>
 
         <form onSubmit={loginUser}>
